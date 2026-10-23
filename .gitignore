@@ -1,0 +1,21 @@
+# Environment & secrets
+venv/
+.env
+config.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Build output (PyInstaller)
+build/
+dist/
+
+# Your private working data (never publish)
+data/
+drafts/
+archive/
+memory/*/*.txt
+memory/*/*.md
+memory/*/*.pdf
+memory/image/*/

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wordmark">Studio<span class="wordmark-dot">.</span></div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-agent="seo">SEO content</button>
+    <button class="tab" data-agent="script">Generate script</button>
+    <button class="tab" data-agent="image">Generate image</button>
+  </nav>
+  <button id="settings-btn" class="settings-btn" type="button" title="Settings">⚙</button>
+</header>
+
+<div id="settings-modal" class="settings-modal hidden">
+  <div class="settings-card">
+    <div class="queue-head">
+      <h2 class="queue-title">Settings</h2>
+      <button id="settings-close" type="button" class="queue-btn">Close</button>
+    </div>
+    <p class="memory-sub">Your keys are saved on this computer only — they're never sent anywhere except directly to Anthropic and Google when generating.</p>
+    <form id="settings-form" class="form">
+      <label>
+        Anthropic API Key
+        <input type="password" name="anthropic_api_key" placeholder="sk-ant-..." autocomplete="off" />
+      </label>
+      <label>
+        Google (Gemini) API Key
+        <input type="password" name="google_api_key" placeholder="AIzaSy..." autocomplete="off" />
+      </label>
+      <button type="submit" class="generate-btn">Save</button>
+    </form>
+    <div id="settings-status" class="status"></div>
+  </div>
+</div>
+
+<main class="layout">
+
+  <!-- SEO panel -->
+  <section class="panel panel--queue" data-panel="seo">
+    <div class="queue-col">
+      <div class="queue-card">
+        <div class="queue-head">
+          <h2 class="queue-title">Topics from Excel</h2>
+          <div class="queue-actions">
+            <button id="queue-upload-btn" type="button" class="queue-btn">Upload .xlsx</button>
+            <button id="queue-download-btn" type="button" class="queue-btn hidden">Download</button>
+          </div>
+        </div>
+        <input type="file" id="queue-file-input" accept=".xlsx" hidden />
+        <div id="queue-status-msg" class="status"></div>
+        <ul id="queue-list" class="queue-list"></ul>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-head">
+          <h2 class="queue-title">Past drafts</h2>
+          <button id="archive-download-btn" type="button" class="queue-btn">Download archive</button>
+        </div>
+        <ul id="drafts-list" class="queue-list"></ul>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <h1 class="canvas-title">SEO content</h1>
+      <p class="canvas-sub">Off-page blog drafts and guest-post copy, written from your brand memory.</p>
+
+      <form id="seo-form" class="form">
+        <label>
+          Topic / working title
+          <input type="text" name="topic" placeholder="e.g. How white pebbles hold up in outdoor landscaping" required />
+        </label>
+        <label>
+          Primary target keyword
+          <input type="text" name="keyword" placeholder="e.g. white landscaping pebbles" required />
+        </label>
+        <label>
+          Target length
+          <select name="word_count">
+            <option value="600">~600 words</option>
+            <option value="800" selected>~800 words</option>
+            <option value="1200">~1200 words</option>
+            <option value="1800">~1800 words</option>
+          </select>
+        </label>
+        <label>
+          Notes <span class="optional">(secondary keywords, tone, CTA — anything else)</span>
+          <div class="preset-row">
+            <button type="button" class="preset-chip" data-preset="comparison">Comparison</button>
+            <button type="button" class="preset-chip" data-preset="buying_guide">Buying guide</button>
+            <button type="button" class="preset-chip" data-preset="roundup">Roundup / ideas</button>
+            <button type="button" class="preset-chip" data-preset="qna">Q&amp;A / Reddit-Quora</button>
+            <button type="button" class="preset-chip preset-clear" data-preset="clear">Clear</button>
+            <button type="button" class="preset-chip" id="preset-website">+ Website</button>
+            <button type="button" class="preset-chip" id="preset-email">+ Email</button>
+          </div>
+          <textarea name="notes" rows="3" placeholder="Optional"></textarea>
+        </label>
+        <button type="submit" class="generate-btn">Generate draft</button>
+      </form>
+
+      <div id="seo-status" class="status"></div>
+
+      <article id="seo-output" class="specimen-card hidden">
+        <div class="specimen-head">
+          <h2 id="seo-output-title"></h2>
+        </div>
+        <div class="specimen-meta">
+          <span id="seo-output-meta"></span>
+          <div class="specimen-copy-actions">
+            <button id="seo-copy-formatted" class="copy-btn">Copy formatted</button>
+            <button id="seo-copy-markdown" class="copy-btn">Copy markdown</button>
+          </div>
+        </div>
+        <div id="seo-output-body" class="specimen-body"></div>
+      </article>
+
+      <div id="safety-check" class="safety-card hidden">
+        <div class="safety-head">
+          <span id="safety-badge" class="safety-badge"></span>
+          <span id="safety-note"></span>
+        </div>
+        <ul id="safety-issues" class="safety-issues"></ul>
+      </div>
+    </div>
+
+    <aside class="memory" data-memory-agent="seo">
+      <h3>Memory</h3>
+      <p class="memory-sub">Brand guidelines this agent reads on every draft.</p>
+      <div class="dropzone" data-agent="seo">
+        <input type="file" accept=".txt,.md,.pdf" hidden />
+        <span>Drop a file or click to upload</span>
+        <span class="dropzone-hint">.txt, .md, .pdf</span>
+      </div>
+      <ul class="file-list" data-agent="seo"></ul>
+    </aside>
+  </section>
+
+  <!-- Script panel (placeholder) -->
+  <section class="panel hidden" data-panel="script">
+    <div class="canvas">
+      <h1 class="canvas-title">Generate script</h1>
+      <p class="canvas-sub">Coming soon — reel and short-form video scripts.</p>
+      <div class="coming-soon">
+        <p>Not built yet. Upload guidelines now so they're ready when this agent goes live.</p>
+      </div>
+    </div>
+    <aside class="memory" data-memory-agent="script">
+      <h3>Memory</h3>
+      <p class="memory-sub">Brand guidelines this agent will read once it's live.</p>
+      <div class="dropzone" data-agent="script">
+        <input type="file" accept=".txt,.md,.pdf" hidden />
+        <span>Drop a file or click to upload</span>
+        <span class="dropzone-hint">.txt, .md, .pdf</span>
+      </div>
+      <ul class="file-list" data-agent="script"></ul>
+    </aside>
+  </section>
+
+  <!-- Image panel -->
+  <section class="panel panel--queue" data-panel="image">
+    <div class="queue-col">
+      <div class="queue-card">
+        <div class="queue-head">
+          <h2 class="queue-title">Past outputs</h2>
+        </div>
+        <p class="memory-sub">Click one to reopen it and keep editing.</p>
+        <ul id="image-outputs-list" class="output-gallery"></ul>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <h1 class="canvas-title">Generate image</h1>
+      <p class="canvas-sub">Photorealistic pebble visuals, grounded in your real product photos.</p>
+
+      <form id="image-form" class="form">
+        <label>
+          Product
+          <select name="product" id="image-product-select">
+            <option value="sierra">Sierra (1–2")</option>
+            <option value="malibu" selected>Malibu (2–3")</option>
+            <option value="laguna">Laguna (3–5")</option>
+          </select>
+        </label>
+        <label>
+          Describe the image
+          <textarea name="prompt" rows="3" placeholder="e.g. A backyard flower bed bordered with white pebbles, sunny afternoon, photorealistic" required></textarea>
+        </label>
+        <button type="submit" class="generate-btn">Generate image</button>
+      </form>
+
+      <div id="image-status" class="status"></div>
+
+      <div id="image-result" class="specimen-card hidden">
+        <img id="image-result-img" alt="Generated pebble visual" />
+        <div id="image-result-note" class="specimen-meta"></div>
+
+        <form id="image-edit-form" class="form">
+          <label>
+            Ask for a change
+            <textarea name="comment" rows="2" placeholder="e.g. Make the border a bit wider"></textarea>
+          </label>
+          <button type="submit" class="generate-btn">Apply edit</button>
+        </form>
+
+        <ul id="image-history" class="queue-list"></ul>
+      </div>
+    </div>
+
+    <aside class="memory" data-memory-agent="image">
+      <div class="queue-head">
+        <h3>Reference photos</h3>
+        <button id="image-ref-refresh" type="button" class="queue-btn">Refresh</button>
+      </div>
+      <p class="memory-sub">You manage these directly in File Explorer — drop photos into the matching product folder, then hit Refresh.</p>
+
+      <div class="product-tabs">
+        <button type="button" class="product-tab" data-product="sierra">Sierra</button>
+        <button type="button" class="product-tab active" data-product="malibu">Malibu</button>
+        <button type="button" class="product-tab" data-product="laguna">Laguna</button>
+      </div>
+
+      <p id="image-ref-folder" class="memory-sub"></p>
+      <ul id="image-ref-list" class="output-gallery"></ul>
+    </aside>
+  </section>
+
+</main>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
